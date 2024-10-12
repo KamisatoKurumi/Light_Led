@@ -34,12 +34,16 @@ public class PlayerInput : MonoBehaviour
     {
         if(isControllingPlayer)
         {
-            Debug.Log(111);
             currentPlayer.GatherInput();
+            if(Input.GetMouseButtonDown(1))
+            {
+                currentPlayer = null;
+                CameraController.Instance.SwitchToFull();
+            }
         }
         else
         {
-            Debug.Log(222);
+            
         }
     }
 

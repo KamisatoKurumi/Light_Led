@@ -12,7 +12,10 @@ public class PlayerClicked : MonoBehaviour
     }
     void OnMouseDown()
     {
-        Debug.Log("Player Be Clicked");
-        PlayerInput.Instance.ChoosePlayer(thisController);
+        if(Input.GetMouseButtonDown(0))
+        {
+            PlayerInput.Instance.ChoosePlayer(thisController);
+            CameraController.Instance.SwitchToLocal(transform);
+        }
     }
 }
