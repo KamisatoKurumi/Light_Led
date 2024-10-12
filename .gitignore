@@ -2,7 +2,6 @@ Library/
 .vscode/
 Logs/
 obj/
-Packages/
 UserSettings/
 Temp/
 *.sln
