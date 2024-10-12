@@ -33,7 +33,7 @@ namespace TarodevController {
             Velocity = (transform.position - _lastPosition) / Time.deltaTime;
             _lastPosition = transform.position;
 
-            GatherInput();
+            //GatherInput();
             RunCollisionChecks();
 
             CalculateWalk(); // Horizontal movement
@@ -47,7 +47,7 @@ namespace TarodevController {
 
         #region Gather Input
 
-        private void GatherInput() {
+        public void GatherInput() {
             Input = new FrameInput {
                 JumpDown = UnityEngine.Input.GetButtonDown("Jump"),
                 JumpUp = UnityEngine.Input.GetButtonUp("Jump"),
