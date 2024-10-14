@@ -1,32 +1,40 @@
+using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.EventSystems;
 
-public class Item : MonoBehaviour, IDragHandler, IPointerDownHandler, IPointerUpHandler
+public class Item : MonoBehaviour
 {
     [SerializeField]private ItemTrack trackThisIsOn;
-
-
+    [SerializeField]private float dragSpeed = 1;
+    [SerializeField]private bool isDraging;
+    float deltaX;
+    float deltaPos;
+    float startDeltaPos;
     void Start()
     {
         transform.position = trackThisIsOn.trackStartPos.position;
     }
 
-    public void OnDrag(PointerEventData eventData)
+    void Update()
     {
-        Debug.Log(eventData.delta.x);
-        //transform.position = trackThisIsOn.GetPosOnTrack(eventData.delta.x);
+        if(isDraging)
+        {
+            Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+            deltaPos = mousePos.x - deltaX;
+            transform.position = trackThisIsOn.GetPosOnTrack(startDeltaPos + deltaPos * dragSpeed);
+        }
     }
+    
     void OnMouseDown()
     {
         Debug.Log(111);
-    }
-    public void OnPointerDown(PointerEventData eventData)
-    {
-        Debug.Log("PointerDown");
+        isDraging = true;
+        deltaX = Camera.main.ScreenToWorldPoint(Input.mousePosition).x;
+        startDeltaPos = trackThisIsOn.GetStartDelta(transform.position);
     }
 
-    public void OnPointerUp(PointerEventData eventData)
+    void OnMouseUp()
     {
-        Debug.Log("PointerUp");
+        Debug.Log(222);
+        isDraging = false;
     }
 }

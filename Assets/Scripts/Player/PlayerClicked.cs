@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TarodevController;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class PlayerClicked : MonoBehaviour
 {
