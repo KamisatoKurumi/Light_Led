@@ -861,8 +861,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fed53a332a6b9434393a2f42bbbf8175, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  hasTrack: 1
   trackThisIsOn: {fileID: 521026074}
-  dragSpeed: 0.2
+  dragSpeed: 1
   isDraging: 0
 --- !u!1001 &5499677738807816618
 PrefabInstance:
