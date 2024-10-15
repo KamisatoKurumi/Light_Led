@@ -215,17 +215,10 @@ public class TranslucentMirror : MonoBehaviour
 
     private void CheckRaycastInLightBeam()
     {
-        Vector3 localYAxis = m_ligthBeam.transform.up;
-        float angleStep = m_ligthBeam.pointLightInnerAngle / (rayCount - 1);
-        float startAngle = -m_ligthBeam.pointLightInnerAngle / 2;  
-
-        for (int i = 0; i < rayCount; i++)
+        if (m_ligthBeam.pointLightInnerRadius <= m_lineCloseDistance)
         {
-            float currentAngle = startAngle + angleStep * i;
-            //将y轴旋转到对应的角度
-            Vector3 direction = Quaternion.Euler(0, 0, currentAngle) * localYAxis;
-
-            RaycastHit2D hit = Physics2D.Raycast(transform.position, direction, m_ligthBeam.pointLightInnerRadius);
+            Vector3 localYAxis = m_ligthBeam.transform.up;
+            RaycastHit2D hit = Physics2D.Raycast(transform.position, localYAxis, m_ligthBeam.pointLightInnerRadius);
             if (hit.collider != null)
             {
                 if (hit.collider.CompareTag(targetTag))
@@ -234,7 +227,7 @@ public class TranslucentMirror : MonoBehaviour
                 }
             }
 
-            Debug.DrawRay(transform.position, direction * m_ligthBeam.pointLightInnerRadius, Color.red);
+            Debug.DrawRay(transform.position, localYAxis * m_ligthBeam.pointLightInnerRadius, Color.red);
         }
     }
 
