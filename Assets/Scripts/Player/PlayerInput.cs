@@ -24,6 +24,11 @@ public class PlayerInput : MonoBehaviour
     }
     private bool isControllingPlayer{get => currentPlayer != null;}
     [SerializeField]private PlayerController currentPlayer;
+
+    public PlayerController CurrentPlayer
+    {
+        get => currentPlayer;
+    }
     
     void Start()
     {
