@@ -16,12 +16,6 @@ public class PlayerInput : MonoBehaviour
         }
         _instance = this;
     }
-    public class InputPackage
-    {
-        public float X,Y;
-        public bool JumpDown;
-        public bool JumpUp;
-    }
     private bool isControllingPlayer{get => currentPlayer != null;}
     [SerializeField]private PlayerController currentPlayer;
     
@@ -45,6 +39,17 @@ public class PlayerInput : MonoBehaviour
         {
             
         }
+    }
+
+    public bool GetCurrentPlayer(out PlayerController controller)
+    {
+        if(currentPlayer == null) 
+        {
+            controller = null;
+            return false;
+        }
+        else controller = currentPlayer;
+        return true;
     }
 
     public void ChoosePlayer(PlayerController playerController)
