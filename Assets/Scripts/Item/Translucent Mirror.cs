@@ -9,7 +9,7 @@ public class TranslucentMirror : MonoBehaviour
     private Light2D m_playerPoint;
 
     [SerializeField]
-    private Light2D m_ligthBeam;
+    private Light2D m_lightBeam;
 
     [Header("光源和镜面的最大距离")]
     [SerializeField]
@@ -76,7 +76,7 @@ public class TranslucentMirror : MonoBehaviour
         set
         {
             if (isUpLightDistacne == value) return;
-            m_ligthBeam.gameObject.SetActive(!isUpLightDistacne);
+            m_lightBeam.gameObject.SetActive(!isUpLightDistacne);
 
             if (isUpLightDistacne)
             {
@@ -110,12 +110,19 @@ public class TranslucentMirror : MonoBehaviour
     [SerializeField]
     private int rayCount;
 
+    #region 常量
+    private float turnLeftRotationZ = 90f;
+    private float turnRightRotationZ = -90f;
+
+    private float mirrorOffset = 0.5f;
+    #endregion
+
     private void Awake()
     {
         //Todo 通过代码获取玩家控制角色(暂时注释
         //m_playerPoint = PlayerInput.Instance.CurrentPlayer.GetComponent<Light2D>();
-        m_ligthBeam = GetComponentInChildren<Light2D>();
-        m_ligthBeam.lightType = Light2D.LightType.Point;
+        m_lightBeam = GetComponentInChildren<Light2D>();
+        m_lightBeam.lightType = Light2D.LightType.Point;
 
         m_currentPlayerInnerRadius = m_playerPoint.pointLightInnerRadius;
         m_currentPlayerOuterRadius = m_playerPoint.pointLightOuterRadius;
@@ -125,16 +132,17 @@ public class TranslucentMirror : MonoBehaviour
     {
         if (m_playerPoint != null)
         {
-            float yDifferenceCalculator = Mathf.Abs(m_playerPoint.transform.position.y - m_ligthBeam.transform.position.y);
+            float yDifferenceCalculator = Mathf.Abs(m_playerPoint.transform.position.y - m_lightBeam.transform.position.y);
             bool isYAlignHandler = yDifferenceCalculator <= xThreshold;
 
-            m_ligthBeam.gameObject.SetActive(isYAlignHandler);
+            m_lightBeam.gameObject.SetActive(isYAlignHandler);
             if (isYAlignHandler)
             {
                 UpdateLightProperties();
+                SpotlightTround();
             }
 
-            if (m_ligthBeam.gameObject.activeSelf)
+            if (m_lightBeam.gameObject.activeSelf && m_lightBeam.pointLightInnerRadius <= m_lineCloseDistance)
             {
                 CheckRaycastInLightBeam();
             }
@@ -143,45 +151,37 @@ public class TranslucentMirror : MonoBehaviour
 
     private void UpdateLightProperties()
     {
-        //计算内外半径
         float distace = Mathf.Abs(this.transform.position.x - m_playerPoint.transform.position.x);
-        float lerpT = spotlightAngleCalculator(distace);
+        float lerpT = Mathf.Clamp01((distace - m_minDistance) / (m_maxDistance - m_minDistance));
 
+        UpdateLightRadiusAndAngle(distace, lerpT);
+        UpdateLightState(distace);
+    }
+
+    private void UpdateLightRadiusAndAngle(float distance, float lerpT)
+    {
         float innerRadius = Mathf.Lerp(m_maxInnerRadius, m_minInnerRadius, lerpT);
         float outerRadius = Mathf.Lerp(m_maxOuterRadius, m_minOuterRadius, lerpT);
 
-        float innerAngle;
-        float outerAngle = Mathf.Lerp(m_maxOuterAngle, m_minOuterAngle, lerpT); ;
-        if (distace < m_lineCloseDistance)
-        {
-            innerAngle = Mathf.Lerp(m_maxInnerAngle, m_minInnerAngle, lerpT);
-        }
-        else
-        {
-            innerAngle = 0;
-        }
+        float innerAngle = distance < m_lineCloseDistance ? Mathf.Lerp(m_maxInnerAngle, m_minInnerAngle, lerpT) : 0;
+        float outerAngle = Mathf.Lerp(m_maxOuterAngle, m_minOuterAngle, lerpT);
 
-        m_ligthBeam.pointLightInnerRadius = innerRadius;
-        m_ligthBeam.pointLightOuterRadius = outerRadius;
+        m_lightBeam.pointLightInnerRadius = innerRadius;
+        m_lightBeam.pointLightOuterRadius = outerRadius;
 
-        m_ligthBeam.pointLightInnerAngle = innerAngle;
-        m_ligthBeam.pointLightOuterAngle = outerAngle;
+        m_lightBeam.pointLightInnerAngle = innerAngle;
+        m_lightBeam.pointLightOuterAngle = outerAngle;
+    }
 
-
-        IsUpLightDistacne = targetDistance <= distace;
-        IsChangeColor = m_ligthBeam.color != m_playerPoint.color;
-
-        SpotlightTround();
+    private void UpdateLightState(float distance)
+    {
+        IsUpLightDistacne = targetDistance <= distance;
+        IsChangeColor = m_lightBeam.color != m_playerPoint.color;
     }
 
     private void ChangeLightColor()
     {
-        m_ligthBeam.color = m_playerPoint.color;
-    }
-
-    private float spotlightAngleCalculator(float distace)
-    {
-        return Mathf.Clamp01((distace - m_minDistance) / (m_maxDistance - m_minDistance));
+        m_lightBeam.color = m_playerPoint.color;
     }
 
     private void UpdatePlayerPointRadius(float innerRadius, float outerRadius)
@@ -192,43 +192,40 @@ public class TranslucentMirror : MonoBehaviour
 
     private void SpotlightTround()
     {
-        Vector3 startPoint = this.transform.position - new Vector3(0, 0.5f, 0);
-        Vector3 endPoint = this.transform.position + new Vector3(0, 0.5f, 0);
+        Vector3 startPoint = this.transform.position - new Vector3(0, mirrorOffset, 0);
+        Vector3 endPoint = this.transform.position + new Vector3(0, mirrorOffset, 0);
 
         Vector3 direction = endPoint - startPoint;
         Vector3 crossProduct = Vector3.Cross(direction, m_playerPoint.transform.position - startPoint);
 
-        Quaternion leftAngleEuler = Quaternion.Euler(new Vector3(0, 0, -90));
-        Quaternion rightAngleEuler = Quaternion.Euler(new Vector3(0, 0, 90));
+        Quaternion leftAngleEuler = Quaternion.Euler(new Vector3(0, 0, turnRightRotationZ));
+        Quaternion rightAngleEuler = Quaternion.Euler(new Vector3(0, 0, turnLeftRotationZ));
 
         if (crossProduct.z > 0 && m_previousDirection != leftAngleEuler)
         {
-            m_ligthBeam.transform.rotation = leftAngleEuler;
+            m_lightBeam.transform.rotation = leftAngleEuler;
         }
         else if (crossProduct.z < 0 && m_previousDirection != rightAngleEuler)
         {   
-            m_ligthBeam.transform.rotation = rightAngleEuler;
+            m_lightBeam.transform.rotation = rightAngleEuler;
         }
 
-        m_previousDirection = m_ligthBeam.transform.rotation;
+        m_previousDirection = m_lightBeam.transform.rotation;
     }
 
     private void CheckRaycastInLightBeam()
     {
-        if (m_ligthBeam.pointLightInnerRadius <= m_lineCloseDistance)
+        Vector3 localYAxis = m_lightBeam.transform.up;
+        RaycastHit2D hit = Physics2D.Raycast(transform.position, localYAxis, m_lightBeam.pointLightInnerRadius);
+        if (hit.collider != null)
         {
-            Vector3 localYAxis = m_ligthBeam.transform.up;
-            RaycastHit2D hit = Physics2D.Raycast(transform.position, localYAxis, m_ligthBeam.pointLightInnerRadius);
-            if (hit.collider != null)
+            if (hit.collider.CompareTag(targetTag))
             {
-                if (hit.collider.CompareTag(targetTag))
-                {
-                    HandleObjctInLight(hit.collider.gameObject);
-                }
+                HandleObjctInLight(hit.collider.gameObject);
             }
-
-            Debug.DrawRay(transform.position, localYAxis * m_ligthBeam.pointLightInnerRadius, Color.red);
         }
+
+        Debug.DrawRay(transform.position, localYAxis * m_lightBeam.pointLightInnerRadius, Color.red);
     }
 
     private void HandleObjctInLight(GameObject target)
