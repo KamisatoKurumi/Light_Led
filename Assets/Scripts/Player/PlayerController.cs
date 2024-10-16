@@ -18,14 +18,19 @@ namespace TarodevController {
         public bool LandingThisFrame { get; private set; }
         public Vector3 RawMovement { get; private set; }
         public bool Grounded => _colDown;
+        public bool RemineDirXForRight = true;
+        private bool isUsingGravity = true;
 
         private Vector3 _lastPosition;
         private float _currentHorizontalSpeed, _currentVerticalSpeed;
 
         // This is horrible, but for some reason colliders are not fully established when update starts...
-        private bool _active;
+        [SerializeField]private bool _active;
         void Awake() => Invoke(nameof(Activate), 0.5f);
-        void Activate() =>  _active = true;
+        public void Activate() =>  _active = true;
+        public void DeActivate() => _active = false;
+        
+        public LightType lightType;
         
         private void Update() {
             if(!_active) return;
@@ -154,6 +159,7 @@ namespace TarodevController {
 
         private void CalculateWalk() {
             if (Input.X != 0) {
+                RemineDirXForRight = Input.X > 0;
                 // Set horizontal move speed
                 _currentHorizontalSpeed += Input.X * _acceleration * Time.deltaTime;
 
@@ -185,6 +191,7 @@ namespace TarodevController {
         private float _fallSpeed;
 
         private void CalculateGravity() {
+            if(!isUsingGravity) return;
             if (_colDown) {
                 // Move out of the ground
                 if (_currentVerticalSpeed < 0) _currentVerticalSpeed = 0;
@@ -199,6 +206,11 @@ namespace TarodevController {
                 // Clamp
                 if (_currentVerticalSpeed < _fallClamp) _currentVerticalSpeed = _fallClamp;
             }
+        }
+
+        public void SetUsingGravity(bool isUsing)
+        {
+            isUsingGravity = isUsing;
         }
 
         #endregion

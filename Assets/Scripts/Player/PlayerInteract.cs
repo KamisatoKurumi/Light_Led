@@ -6,17 +6,18 @@ using UnityEngine;
 public class PlayerInteract : MonoBehaviour
 {
     private PlayerController controller;
-    private PlayerLightHandler lightHandler;
+    private ILightController lightHandler;
     private IInteract interactableItemInRange;
-    PlayerController currentPlayer;
+    
+    public readonly LightType lightType = LightType.Yellow;
     bool isLightOn;
     void Start()
     {
         controller = GetComponent<PlayerController>();
-        lightHandler = GetComponentInChildren<PlayerLightHandler>();
+        lightHandler = GetComponentInChildren<ILightController>();
         isLightOn = lightHandler.GetIsLightOn();
     }
-
+    PlayerController currentPlayer;
     void Update()
     {
         
@@ -49,5 +50,20 @@ public class PlayerInteract : MonoBehaviour
         {
             interactableItemInRange = null;
         }
+    }
+
+    public LightType GetLightType()
+    {
+        return controller.lightType;
+    }
+    public void LockPlayer()
+    {
+        controller.DeActivate();
+        controller.SetUsingGravity(false);
+    }
+    public void UnlockPlayer()
+    {
+        controller.Activate();
+        controller.SetUsingGravity(true);
     }
 }

@@ -1,13 +1,15 @@
 using System.Collections;
 using System.Collections.Generic;
+using TarodevController;
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
 
-public class PlayerLightHandler : MonoBehaviour, ILightController
+public class Light_Circle : MonoBehaviour, ILightController
 {
     [Header("Component")]
     [SerializeField]private Light2D _light;
     [SerializeField]private CircleCollider2D _collider;
+    private PlayerController parent;
 
     [Header("Property")]
     [SerializeField]private float lightRange;
@@ -18,8 +20,10 @@ public class PlayerLightHandler : MonoBehaviour, ILightController
 
     void Start()
     {
+        parent = GetComponentInParent<PlayerController>();
         _light = GetComponentInChildren<Light2D>();
         _collider = GetComponent<CircleCollider2D>();
+        TurnOffLight();
     }
 
     void Update()
@@ -42,13 +46,32 @@ public class PlayerLightHandler : MonoBehaviour, ILightController
     {
         isLightOn = true;
         lightIntensityTarget = 1;
+        _collider.enabled = true;
     }
 
     public void TurnOffLight()
     {
         isLightOn = false;
         lightIntensityTarget = 0;
+        _collider.enabled = false;
     }
+    private void OnTriggerEnter2D(Collider2D other)
+    {
+        if(other.GetComponent<IInteractWithLight>() != null)
+        {
+            other.GetComponent<IInteractWithLight>().Interact(parent.lightType);
+        }
+    }
+
+    private void OnTriggerExit2D(Collider2D other)
+    {
+        
+        if(other.GetComponent<IInteractWithLight>() != null)
+        {
+            other.GetComponent<IInteractWithLight>().EndInteract(parent.lightType);
+        }
+    }
+
 
     public bool GetIsLightOn()
     {
